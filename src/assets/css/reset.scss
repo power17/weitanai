@@ -1,0 +1,11 @@
+body,html{
+  height: 100%;
+}
+body,p,h1{
+  margin: 0;
+}
+
+input,button{
+  outline: 0;
+  -webkit-tap-highlight-color:transparent;
+}
