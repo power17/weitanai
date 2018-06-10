@@ -1,0 +1,518 @@
+var libs=[
+    {
+        id:"libmain",
+        manifest:[
+            {id:"bg",src:"lib/bg.jpg"},
+            {id:"crash",src:"lib/crash.mp3"},
+            {id:"bgs",src:"lib/bgs.mp3"},
+            {id:"bb",src:"lib/b.mp3"},
+            {id:"waterdrop",src:"lib/water.mp3"},
+            {id:"vitabt",src:"lib/vitabt.png"},
+            {id:"ct",src:"lib/ct.png"},
+            {id:"cupbg",src:"lib/vitacup2.png"},
+            {id:"cup",src:"lib/cup.png"},
+            {id:"cupmsk",src:"lib/cupmsk.png"},
+            {id:"tree",src:"lib/tree.png"},
+            {id:"beanf",src:"lib/beanf.png"},
+            {id:"mark",src:"lib/mark.png"},
+            {id:"beanp",src:"lib/beanp.png"},
+            {id:"drop",src:"lib/drop.png"},
+            {id:"btnmusic",src:"lib/btnmusic.png"},
+            {id:"ck",src:"lib/bean.png"}
+        ]
+    }
+];
+
+var gameTime=30; //游戏时间
+var dropAll=15; //通关需要收集的豆子数量
+
+//@reno
+//分享标题：维他奶健康加法
+//分享摘要：
+//分享图:styles/share.jpg
+
+
+$(function(){
+	kap.init();
+    $(".btn1").unbind().click(function(){
+        pageReadme();
+    });
+    $(".btn2").unbind().click(function(){
+        //@reno
+        //先检查下用户状态，根据情况弹出提示
+        if(false){
+            kap.popup({
+                myclass:"kap-alert dn-popup",
+                height:250,
+                html:'<span class="dn-popup-tips">亲，今天的活动名额已经抢完，请明天再继续，谢谢</span>',
+                cancel:{
+                    label:'<img class="dn-popup-bt" src="styles/btnok.png" />',
+                    callback:function(){
+                        
+                    }
+                }
+            });
+        }else if(false){
+            kap.popup({
+                myclass:"kap-alert dn-popup",
+                height:250,
+                html:'<span class="dn-popup-tips">亲，您今天的抽奖次数已经用完，请明天再继续，谢谢参与！</span>',
+                cancel:{
+                    label:'<img class="dn-popup-bt" src="styles/btnok.png" />',
+                    callback:function(){
+                        
+                    }
+                }
+            });
+        }else if(false){
+            kap.popup({
+                myclass:"kap-alert dn-popup",
+                height:250,
+                html:'<span class="dn-popup-tips">亲，该活动已结束，谢谢参与！</span>',
+                cancel:{
+                    label:'<img class="dn-popup-bt" src="styles/btnok.png" />',
+                    callback:function(){
+                        
+                    }
+                }
+            });
+        }
+        pageMain();
+    });
+    $(".btn-back").unbind().click(function(){
+        pageCover();
+    });
+    $(".btn-add1").unbind().click(function(){
+        pageThanks();
+    });
+    $(".btn-add2").unbind().click(function(){
+        pageForm();
+    });
+    
+    $(".btn-submit").unbind().click(function(){
+        //@reno
+        //提交领奖人信息
+        kap.popup({
+            myclass:"kap-alert dn-popup",
+            height:250,
+            html:'<span class="dn-popup-tips">提交信息成功</span>',
+            cancel:{
+                label:'<img class="dn-popup-bt" src="styles/btnok.png" />',
+                callback:function(){
+                    window.location.reload();
+                }
+            }
+        });
+    });
+});
+
+$(window).load(function(){
+    kap.bodyLoading(true);
+    kap.createjs.init();
+    kap.stageSize(640);
+    kap.libLoader.loadLibs(libs);
+    kap.libLoader.onLibLoaded=function(lib){
+        if(lib.id=="libmain"){
+            kap.bodyLoading(false);
+            //pageThanks();
+            //pageForm();
+            //pageResult();
+            pageCover();
+            //pageMain();
+            //pageLock(); 未到时间的话锁定页面
+        }
+    }
+    /*
+    kap.libLoader.new("lib",[
+        {id:"numbers",src:"lib/numbers.png"}
+    ],function(){
+        page1();
+    });
+    */
+});
+function pageLock(){
+    kap.switchPage("#lock");
+}
+
+function pageThanks(){
+    kap.switchPage("#thanks");
+}
+
+function pageForm(){
+    kap.switchPage("#form");
+}
+
+function pageResult(){
+    kap.switchPage("#result");
+}
+
+function pageCover(){
+    kap.switchPage("#cover");
+}
+
+function pageReadme(){
+    kap.switchPage("#readme");
+}
+
+function gameover(arg){
+    if(arg){
+        //成功通关
+        pageResult();
+    }else{
+        kap.popup({
+            myclass:"kap-alert dn-popup",
+            height:250,
+            html:'<span class="dn-popup-tips">十分抱歉，您没有集满一杯健康加法，再玩一次吧！</span>',
+            cancel:{
+                label:'<img class="dn-popup-bt" src="styles/btnok.png" />',
+                callback:function(){
+                    window.location.reload();
+                }
+            }
+        });
+    }
+}
+
+function pageMain(){
+    
+    createjs.Sound.play("bgs",{loop:-1});
+    var wh=[578,482,430,370,320,260,220,220,220,220];
+    
+    kap.switchPage("#main");
+    var stage=kap.stages.new($("#main"));
+    var bg=new createjs.Bitmap(kap.libLoader.get("bg"));
+    stage.addChild(bg);
+
+    var dropNum=0;
+    
+    var cup=kap.createjs.bitmapMaskSprite(kap.libLoader.get("cup"),kap.libLoader.get("cupmsk"),325,658);
+    cup.regY=608;
+    cup.regX=161;
+    cup.x=kap.sw/2;
+    cup.y=kap.sh-60;
+    cup.pos=0;
+    cup.tree=false;
+    //cup.gotoAndStop(6);
+    stage.addChild(cup);
+    
+    var cupbg=new createjs.Bitmap(kap.libLoader.get("cupbg"));
+    cupbg.regY=608;
+    cupbg.regX=161;
+    cupbg.x=kap.sw/2;
+    cupbg.y=cup.y;
+    cupbg.alpha=0.4;
+    cupbg.pos=0;
+    stage.addChild(cupbg);
+    
+    var tree=new createjs.Bitmap(kap.libLoader.get("tree"));
+    tree.regX=110;
+    tree.regY=238;
+    tree.x=kap.sw/2;
+    tree.y=cup.y-368;
+    tree.scaleX=tree.scaleY=0;
+    stage.addChild(tree);
+
+    var vitabt=new createjs.Bitmap(kap.libLoader.get("vitabt"));
+    vitabt.regY=157;
+    vitabt.y=kap.sh;
+    stage.addChild(vitabt);
+    
+    var beans=new createjs.Container();
+    stage.addChild(beans);
+    
+    var ct=new createjs.Sprite(new createjs.SpriteSheet({
+        images:[kap.libLoader.get("ct")],
+        frames:{width:340,height:340}
+    }));
+    ct.regX=170;
+    ct.regY=170;
+    ct.x=kap.sw/2;
+    ct.y=400;
+    ct.scaleX=ct.scaleY=0;
+    createjs.Tween.get(ct).to({scaleX:1,scaleY:1},1000,createjs.Ease.bounceOut).to({scaleX:0,scaleY:0},0).call(function(){
+        this.gotoAndStop(1);
+        createjs.Tween.get(ct).to({scaleX:1,scaleY:1},1000,createjs.Ease.bounceOut).to({scaleX:0,scaleY:0},0).call(function(){
+            this.gotoAndStop(2);
+            createjs.Tween.get(ct).to({scaleX:1,scaleY:1},1000,createjs.Ease.bounceOut).to({scaleX:0,scaleY:0},0).call(function(){
+                this.gotoAndStop(3);
+                createjs.Tween.get(ct).to({scaleX:1,scaleY:1},1000,createjs.Ease.bounceOut).to({scaleX:0,scaleY:0},0).call(function(){
+                    clock.startCount();
+                    gamestart();
+                });
+            });
+        });
+    });
+    
+    stage.addChild(ct);
+    
+    var clock=new createjs.Container();
+    clock.time=gameTime;
+    clock.label=new createjs.Text(clock.time,"36px Arial","#fff");
+    clock.label.textAlign="center";
+    clock.label.y=-18;
+    clock.bg=new createjs.Shape();
+    clock.bg.graphics.s("rgba(255,255,255,0.6)").ss(6).dc(0,0,30);
+    clock.addChild(clock.bg,clock.label);
+    clock.x=60;
+    clock.y=60;
+    clock.startCount=function(){
+        createjs.Tween.get(this,{loop:true}).wait(1000).call(function(){
+            this.time--;
+            if(this.time<0){
+                //endgame
+                createjs.Tween.removeTweens(this);
+                ct.gotoAndStop(4);
+                ct.y=220;
+                createjs.Tween.get(ct).to({scaleX:1,scaleY:1},1000,createjs.Ease.bounceOut).call(function(){
+                    gameover(false);
+                });
+            }else{
+                this.label.text=this.time;
+            }
+        });
+    }
+    stage.addChild(clock);
+    
+    var scoreText=new createjs.Text("优选黄豆：0","28px Arial","#fff");
+    scoreText.textAlign="right";
+    scoreText.x=kap.sw-40;
+    scoreText.y=40;
+    stage.addChild(scoreText);
+    
+    var btnmusic=stage.btnmusic=new createjs.Sprite(new createjs.SpriteSheet({
+        images:[kap.libLoader.get("btnmusic")],
+        frames:{width:80,height:80}
+    }));
+    btnmusic.x=20;
+    btnmusic.y=kap.sh-230;
+    btnmusic.firstPlaying=false;
+    btnmusic.playing=true;
+    btnmusic.startBgm=function(){
+        createjs.Sound.stop();
+        createjs.Sound.play("bgs",{loop:-1});
+    }
+    btnmusic.on("click",function(){
+        this.playing=!this.playing;
+        if(this.playing){
+            createjs.Sound.volume=1;
+            this.gotoAndStop(0);
+        }else{
+            createjs.Sound.volume=0;
+            this.gotoAndStop(1);
+        }
+    });
+    stage.addChild(btnmusic);
+    
+    
+    var _btypect=0;
+    
+    function gamestart(){
+
+        for(var i=0;i<5;i++){
+            var ck=new createjs.Container();
+            ck.clip=new createjs.Bitmap(kap.libLoader.get("ck"));
+            ck.mark=new createjs.Sprite(new createjs.SpriteSheet({
+                images:[kap.libLoader.get("mark")],
+                frames:{width:150,height:177}
+            }));
+            ck.mark.regX=50;
+            ck.mark.regY=177;
+            ck.mark.x=20;
+            ck.mark.y=-30;
+            ck.addChild(ck.mark,ck.clip);
+            ck.clip.hitArea=new createjs.Shape();
+            ck.clip.hitArea.graphics.f("#fff").dc(0,0,100);
+            ck.clip.regX=35;
+            ck.clip.regY=40;
+            ck.resetMe=function(){
+                this.locked=false;
+                this.y=-100;
+                this.clip.rotation=Math.random()*30-15;
+                if(Math.random()>0.5){
+                    this.x=Math.random()*240+40;
+                }else{
+                    this.x=Math.random()*220+320;
+                }
+                
+                this.scaleX=this.scaleY=1;
+                this.clip.scaleX=this.clip.scaleY=Math.random()*0.3+0.6;
+                this.rspeed=Math.random()*8-4;
+                if(Math.random()>0.4){
+                    this.btype=0;
+                    this.speed=Math.random()*15+3;
+                }else{
+                    _btypect++;
+                    this.btype=_btypect%6+1;
+                    this.speed=Math.random()*10+10;
+                }
+                this.mark.gotoAndStop(this.btype);
+            }
+            ck.tickId=ck.on("tick",function(){
+                this.y+=this.speed;
+                this.clip.rotation+=this.rspeed;
+                if(this.y>kap.sh+150){
+                    this.resetMe();
+                }
+            });
+            ck.handler=function(){
+                if(this.locked)return;
+                this.locked=true;
+                createjs.Sound.play("bb");
+                //createjs.Sound.play("crash");
+                bomb(this,stage);
+                var tmp=new createjs.Bitmap(kap.libLoader.get("beanf"));
+                tmp.regX=93;
+                tmp.regY=120;
+                tmp.scaleX=tmp.scaleY=0;
+                tmp.x=this.x;
+                tmp.y=this.y;
+                tmp.rotation=Math.random()*360;
+                createjs.Tween.get(tmp).to({scaleX:1,scaleY:1},100,createjs.Ease.cubicIn).wait(300).to({alpha:0},100,createjs.Ease.cubicIn).call(function(){
+                    stage.removeChild(this);
+                });
+                stage.addChild(tmp);
+                if(this.btype>0){
+                    var ty=cup.y-750;
+                    dropNum++;
+                    scoreText.text="优选黄豆："+dropNum;
+                    /*
+                    createjs.Tween.get(this).to({x:kap.sw/2,y:ty},500,createjs.Ease.cubicInOut).to({scaleX:0,scaleY:0},100,createjs.Ease.cubicIn).call(function(){
+                        //drop
+                        var d=kap.recyclebin.new("drop",function(){
+                            var c=new createjs.Bitmap(kap.libLoader.get("drop"));
+                            return c;
+                        });
+                        d.regX=34;
+                        d.regY=83;
+                        d.x=kap.sw/2;
+                        d.y=this.y;
+                        d.scaleX=d.scaleY=0;
+                        d.ty=cup.y-cup.regY+wh[cup.pos];
+                        d.dropTime=(d.ty-d.y);
+                        console.log(d.dropTime);
+                        createjs.Tween.get(d,{override:true}).to({scaleX:0.6,scaleY:0.6},50).to({y:d.ty,scaleX:0.6,scaleY:0.6},d.dropTime,createjs.Ease.cubicIn).call(function(){
+                            createjs.Sound.play("waterdrop");
+                            if(!cup.tree){
+                                cup.pos=Math.floor(6*dropNum/dropAll);
+                                if(cup.pos>6)cup.pos=6;
+                                if(cup.pos==6){
+                                    cup.tree=true;
+                                    //tree
+                                    for(var i in beans.children){
+                                        beans.children[i].off(beans.children[i].tickId);
+                                        createjs.Tween.get(beans.children[i],{override:true}).to({x:tree.x,y:tree.y},Math.random()*300+1000,createjs.Ease.cubicInOut).to({alpha:0},100).call(function(){
+                                            this.parent.removeChild(this);
+                                        });
+                                    }
+                                    createjs.Tween.get(tree).wait(1000).to({scaleX:1,scaleY:1},2000,createjs.Ease.cubicOut);
+                                    
+                                }
+                                cup.gotoAndStop(cup.pos);
+                            }
+                            waterbomb(this,stage);
+                            kap.recyclebin.recycle(this);
+                        });
+                        stage.addChild(d);
+                        this.resetMe();
+                    });
+                    */
+                    
+                    var d=kap.recyclebin.new("drop",function(){
+                        var c=new createjs.Bitmap(kap.libLoader.get("drop"));
+                        return c;
+                    });
+                    d.regX=34;
+                    d.regY=83;
+                    d.x=kap.sw/2;
+                    d.y=50;
+                    d.scaleX=d.scaleY=0;
+                    d.ty=cup.y-cup.regY+wh[cup.pos];
+                    d.dropTime=(d.ty-d.y);
+                    createjs.Tween.get(d,{override:true}).to({scaleX:0.6,scaleY:0.6},50).to({y:d.ty,scaleX:0.6,scaleY:0.6},d.dropTime,createjs.Ease.cubicIn).call(function(){
+                        createjs.Sound.play("waterdrop");
+                        if(!cup.tree){
+                            cup.pos=Math.floor(6*dropNum/dropAll);
+                            if(cup.pos>6)cup.pos=6;
+                            if(cup.pos==6){
+                                cup.tree=true;
+                                //tree
+                                for(var i in beans.children){
+                                    beans.children[i].off(beans.children[i].tickId);
+                                    //createjs.Tween.get(beans.children[i],{override:true}).to({x:tree.x,y:tree.y},Math.random()*300+1000,createjs.Ease.cubicInOut).to({alpha:0},100).call(function(){
+                                    createjs.Tween.get(beans.children[i],{override:true}).to({alpha:0},Math.random()*300+100).call(function(){
+                                        this.parent.removeChild(this);
+                                    });
+                                }
+                                createjs.Tween.get(tree).wait(1000).to({scaleX:1.5,scaleY:1.5},2000,createjs.Ease.cubicOut).call(function(){
+                                    //游戏结束
+                                    gameover(true);
+                                });
+
+                            }
+                            cup.gotoAndStop(cup.pos);
+                        }
+                        waterbomb(this,stage);
+                        kap.recyclebin.recycle(this);
+                    });
+                    stage.addChild(d);
+                    this.resetMe();
+                    
+
+                }else{
+                   this.resetMe(); 
+                }
+
+
+            }
+            ck.mark.on("mousedown",function(){
+                this.parent.handler();
+            });
+            ck.clip.on("mousedown",function(){
+                this.parent.handler();
+            });
+            ck.resetMe();
+            beans.addChild(ck);
+        }
+    }
+    
+}
+
+function waterbomb(t,stage){
+    for(var i=0;i<8;i++){
+        var q=kap.recyclebin.new("waterdrop",function(){
+            var c=new createjs.Shape();
+            c.graphics.f("#fff").dc(0,0,20);
+            return c;
+        });
+        q.x=t.x;
+        q.y=t.y;
+        q.scaleX=q.scaleY=Math.random()*0.2+1;
+        createjs.Tween.get(q).to({rotation:Math.random()*360,scaleX:0,scaleY:0,x:q.x+Math.random()*150-75,y:q.y+Math.random()*350-250},Math.random()*300+750,createjs.Ease.cubicOut).call(function(){
+            kap.recyclebin.recycle(this);
+        });
+        stage.addChild(q);
+    }
+}
+
+function bomb(t,stage){
+    for(var i=0;i<8;i++){
+        var q=kap.recyclebin.new("beanclip",function(){
+            var c=new createjs.Bitmap(kap.libLoader.get("beanp"));
+            return c;
+        });
+        q.rotation=Math.random()*360;
+        q.x=t.x;
+        q.y=t.y;
+        q.scaleX=q.scaleY=Math.random()*0.2+1;
+        createjs.Tween.get(q).to({rotation:Math.random()*360,scaleX:0,scaleY:0,x:q.x+Math.random()*150-75,y:q.y+Math.random()*350-50},Math.random()*300+750,createjs.Ease.cubicOut).call(function(){
+            kap.recyclebin.recycle(this);
+        });
+        stage.addChild(q);
+    }
+}
+
+
+
+
+
+
